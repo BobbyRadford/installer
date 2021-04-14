@@ -164,6 +164,25 @@ github.com/ChrisTrenkamp/goxpath/tree/xmltree/xmlbuilder
 github.com/ChrisTrenkamp/goxpath/tree/xmltree/xmlele
 github.com/ChrisTrenkamp/goxpath/tree/xmltree/xmlnode
 github.com/ChrisTrenkamp/goxpath/xconst
+# github.com/IBM-Cloud/bluemix-go v0.0.0-20210408042812-96aaa47da4cd
+## explicit
+github.com/IBM-Cloud/bluemix-go
+github.com/IBM-Cloud/bluemix-go/api/cis/cisv1
+github.com/IBM-Cloud/bluemix-go/api/iampap/iampapv2
+github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/catalog
+github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management
+github.com/IBM-Cloud/bluemix-go/authentication
+github.com/IBM-Cloud/bluemix-go/bmxerror
+github.com/IBM-Cloud/bluemix-go/client
+github.com/IBM-Cloud/bluemix-go/crn
+github.com/IBM-Cloud/bluemix-go/endpoints
+github.com/IBM-Cloud/bluemix-go/helpers
+github.com/IBM-Cloud/bluemix-go/http
+github.com/IBM-Cloud/bluemix-go/models
+github.com/IBM-Cloud/bluemix-go/rest
+github.com/IBM-Cloud/bluemix-go/session
+github.com/IBM-Cloud/bluemix-go/trace
+github.com/IBM-Cloud/bluemix-go/utils
 # github.com/MakeNowJust/heredoc v1.0.0
 github.com/MakeNowJust/heredoc
 # github.com/Netflix/go-expect v0.0.0-20190729225929-0e00d9168667
@@ -1665,8 +1684,7 @@ golang.org/x/lint/golint
 ## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
-## explicit
+# golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -1678,6 +1696,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
+golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 ## explicit
 golang.org/x/oauth2
@@ -1685,7 +1704,7 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20201202213521-69691e467435
+# golang.org/x/sys v0.0.0-20210112080510-489259a85091
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader

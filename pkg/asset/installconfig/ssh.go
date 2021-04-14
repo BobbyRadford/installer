@@ -78,21 +78,25 @@ func (a *sshPublicKey) Generate(asset.Parents) error {
 	}
 	sort.Strings(paths)
 
+	// TODO: Remove the os.LookupEnv() as this is only needed for development
 	var path string
-	if err := survey.AskOne(&survey.Select{
-		Message: "SSH Public Key",
-		Help:    "The SSH public key used to access all nodes within the cluster. This is optional.",
-		Options: paths,
-		Default: noSSHKey,
-	}, &path, func(ans interface{}) error {
-		choice := ans.(string)
-		i := sort.SearchStrings(paths, choice)
-		if i == len(paths) || paths[i] != choice {
-			return fmt.Errorf("invalid path %q", choice)
+	var ok bool
+	if path, ok = os.LookupEnv("SSH_KEY_PATH"); !ok {
+		if err := survey.AskOne(&survey.Select{
+			Message: "SSH Public Key",
+			Help:    "The SSH public key used to access all nodes within the cluster. This is optional.",
+			Options: paths,
+			Default: noSSHKey,
+		}, &path, func(ans interface{}) error {
+			choice := ans.(string)
+			i := sort.SearchStrings(paths, choice)
+			if i == len(paths) || paths[i] != choice {
+				return fmt.Errorf("invalid path %q", choice)
+			}
+			return nil
+		}); err != nil {
+			return errors.Wrap(err, "failed UserInput")
 		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "failed UserInput")
 	}
 
 	a.Key = pubKeys[path]

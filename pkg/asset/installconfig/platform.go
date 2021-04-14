@@ -2,6 +2,7 @@ package installconfig
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/pkg/errors"
@@ -12,6 +13,7 @@ import (
 	azureconfig "github.com/openshift/installer/pkg/asset/installconfig/azure"
 	baremetalconfig "github.com/openshift/installer/pkg/asset/installconfig/baremetal"
 	gcpconfig "github.com/openshift/installer/pkg/asset/installconfig/gcp"
+	ibmcloudconfig "github.com/openshift/installer/pkg/asset/installconfig/ibmcloud"
 	kubevirtconfig "github.com/openshift/installer/pkg/asset/installconfig/kubevirt"
 	libvirtconfig "github.com/openshift/installer/pkg/asset/installconfig/libvirt"
 	openstackconfig "github.com/openshift/installer/pkg/asset/installconfig/openstack"
@@ -22,6 +24,7 @@ import (
 	"github.com/openshift/installer/pkg/types/azure"
 	"github.com/openshift/installer/pkg/types/baremetal"
 	"github.com/openshift/installer/pkg/types/gcp"
+	"github.com/openshift/installer/pkg/types/ibmcloud"
 	"github.com/openshift/installer/pkg/types/kubevirt"
 	"github.com/openshift/installer/pkg/types/libvirt"
 	"github.com/openshift/installer/pkg/types/none"
@@ -45,9 +48,15 @@ func (a *platform) Dependencies() []asset.Asset {
 
 // Generate queries for input from the user.
 func (a *platform) Generate(asset.Parents) error {
-	platform, err := a.queryUserForPlatform()
-	if err != nil {
-		return err
+	// TODO: Remove the os.LookupEnv() as this is only needed for development
+	var platform string
+	var ok bool
+	var err error
+	if platform, ok = os.LookupEnv("PLATFORM"); !ok {
+		platform, err = a.queryUserForPlatform()
+		if err != nil {
+			return err
+		}
 	}
 
 	switch platform {
@@ -68,6 +77,11 @@ func (a *platform) Generate(asset.Parents) error {
 		}
 	case gcp.Name:
 		a.GCP, err = gcpconfig.Platform()
+		if err != nil {
+			return err
+		}
+	case ibmcloud.Name:
+		a.IBMCloud, err = ibmcloudconfig.Platform()
 		if err != nil {
 			return err
 		}
