@@ -9,9 +9,11 @@ import (
 	awsconfig "github.com/openshift/installer/pkg/asset/installconfig/aws"
 	azureconfig "github.com/openshift/installer/pkg/asset/installconfig/azure"
 	gcpconfig "github.com/openshift/installer/pkg/asset/installconfig/gcp"
+	ibmcloudconfig "github.com/openshift/installer/pkg/asset/installconfig/ibmcloud"
 	"github.com/openshift/installer/pkg/types/aws"
 	"github.com/openshift/installer/pkg/types/azure"
 	"github.com/openshift/installer/pkg/types/gcp"
+	"github.com/openshift/installer/pkg/types/ibmcloud"
 	"github.com/openshift/installer/pkg/validate"
 )
 
@@ -59,6 +61,11 @@ func (a *baseDomain) Generate(parents asset.Parents) error {
 
 		// We are done if success (err == nil) or an err besides forbidden/throttling
 		if !(gcpconfig.IsForbidden(err) || gcpconfig.IsThrottled(err)) {
+			return err
+		}
+	case ibmcloud.Name:
+		a.BaseDomain, err = ibmcloudconfig.GetBaseDomain(platform.IBMCloud.ResourceGroupID)
+		if err != nil {
 			return err
 		}
 	default:

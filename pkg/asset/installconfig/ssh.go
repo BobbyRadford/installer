@@ -94,7 +94,6 @@ func (a *sshPublicKey) Generate(asset.Parents) error {
 	}); err != nil {
 		return errors.Wrap(err, "failed UserInput")
 	}
-
 	a.Key = pubKeys[path]
 	return nil
 }

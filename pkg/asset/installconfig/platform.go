@@ -12,6 +12,7 @@ import (
 	azureconfig "github.com/openshift/installer/pkg/asset/installconfig/azure"
 	baremetalconfig "github.com/openshift/installer/pkg/asset/installconfig/baremetal"
 	gcpconfig "github.com/openshift/installer/pkg/asset/installconfig/gcp"
+	ibmcloudconfig "github.com/openshift/installer/pkg/asset/installconfig/ibmcloud"
 	kubevirtconfig "github.com/openshift/installer/pkg/asset/installconfig/kubevirt"
 	libvirtconfig "github.com/openshift/installer/pkg/asset/installconfig/libvirt"
 	openstackconfig "github.com/openshift/installer/pkg/asset/installconfig/openstack"
@@ -22,6 +23,7 @@ import (
 	"github.com/openshift/installer/pkg/types/azure"
 	"github.com/openshift/installer/pkg/types/baremetal"
 	"github.com/openshift/installer/pkg/types/gcp"
+	"github.com/openshift/installer/pkg/types/ibmcloud"
 	"github.com/openshift/installer/pkg/types/kubevirt"
 	"github.com/openshift/installer/pkg/types/libvirt"
 	"github.com/openshift/installer/pkg/types/none"
@@ -68,6 +70,11 @@ func (a *platform) Generate(asset.Parents) error {
 		}
 	case gcp.Name:
 		a.GCP, err = gcpconfig.Platform()
+		if err != nil {
+			return err
+		}
+	case ibmcloud.Name:
+		a.IBMCloud, err = ibmcloudconfig.Platform()
 		if err != nil {
 			return err
 		}
