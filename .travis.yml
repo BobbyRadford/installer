@@ -1,0 +1,38 @@
+# ******************************************************************************
+# * Licensed Materials - Property of IBM
+# * IBM Cloud Kubernetes Service, 5737-D43
+# * (C) Copyright IBM Corp. 2021 All Rights Reserved.
+# * US Government Users Restricted Rights - Use, duplication or
+# * disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+# ******************************************************************************
+dist: bionic
+
+env:
+  global:
+  - GOLANGCI_LINT_VERSION=v1.31.0
+
+jobs:
+  include:
+  - language: python
+    python: "3.8"
+    install:
+    - pip install bashate flake8 pylint yamllint
+    script:
+    - ./.travis_checks.sh bashate
+    - ./.travis_checks.sh shellcheck
+    - ./.travis_checks.sh flake8
+    - ./.travis_checks.sh pylint
+    - ./.travis_checks.sh yamllint
+
+  - language: go
+    go: "1.14"
+    install:
+    # Make sure we don't add golint to go.mod as an actual dependency
+    - GO111MODULE=off go get golang.org/x/lint/golint
+    - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
+    - curl https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+    script:
+    - ./.travis_checks.sh golint
+    - ./.travis_checks.sh golangci-lint
+    - ./.travis_checks.sh go-test
+    - ./.travis_checks.sh tflint
