@@ -23,12 +23,13 @@ type API interface {
 // Client makes calls to the GCP API.
 type Client struct {
 	ssn           *session.Session
-	managementApi management.ResourceManagementAPI
-	controllerApi controller.ResourceControllerAPI
-	cisApi        cisv1.CisServiceAPI
+	managementAPI management.ResourceManagementAPI
+	controllerAPI controller.ResourceControllerAPI
+	cisAPI        cisv1.CisServiceAPI
 }
 
-var cisServiceId = "75874a60-cb12-11e7-948e-37ac098eb1b9"
+// cisServiceID is the Cloud Internet Services' catalog service ID.
+var cisServiceID = "75874a60-cb12-11e7-948e-37ac098eb1b9"
 
 // NewClient initializes a client with a session.
 func NewClient(ctx context.Context) (*Client, error) {
@@ -55,10 +56,11 @@ func NewClient(ctx context.Context) (*Client, error) {
 
 func (c *Client) loadCloudAPIs() error {
 	var apisToLoad []func() error
-	apisToLoad = append(apisToLoad, c.loadResourceManagementApi)
-	apisToLoad = append(apisToLoad, c.loadResourceControllerApi)
-	apisToLoad = append(apisToLoad, c.loadCloudInternetServicesApi)
+	apisToLoad = append(apisToLoad, c.loadResourceManagementAPI)
+	apisToLoad = append(apisToLoad, c.loadResourceControllerAPI)
+	apisToLoad = append(apisToLoad, c.loadCloudInternetServicesAPI)
 
+	// Call all the load functions
 	var err error
 	for _, fn := range apisToLoad {
 		err = fn()
@@ -73,14 +75,15 @@ func (c *Client) loadCloudAPIs() error {
 	return nil
 }
 
+// GetPublicDomains returns all of the domains from among the resource group's public DNS zones managed by CIS.
 func (c *Client) GetPublicDomains(ctx context.Context, project string) ([]string, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	resourceController := c.controllerApi.ResourceServiceInstance()
+	resourceController := c.controllerAPI.ResourceServiceInstance()
 
 	cisInstancesQuery := controller.ServiceInstanceQuery{
-		ServiceID: cisServiceId,
+		ServiceID: cisServiceID,
 	}
 
 	cisInstances, err := resourceController.ListInstances(cisInstancesQuery)
@@ -89,10 +92,10 @@ func (c *Client) GetPublicDomains(ctx context.Context, project string) ([]string
 	}
 
 	var allZones []cisv1.Zone
-	zonesApi := c.cisApi.Zones()
+	zonesAPI := c.cisAPI.Zones()
 	for _, instance := range cisInstances {
 		crnstr := instance.Crn.String()
-		zones, err := zonesApi.ListZones(crnstr)
+		zones, err := zonesAPI.ListZones(crnstr)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to list dns zones")
 		}
@@ -108,40 +111,40 @@ func (c *Client) GetPublicDomains(ctx context.Context, project string) ([]string
 	return zoneNames, nil
 }
 
-// GetResourceGroups gets the list of resource groups
+// GetResourceGroups gets the list of resource groups.
 func (c *Client) GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error) {
-	resourceGroupApi := c.managementApi.ResourceGroup()
+	resourceGroupAPI := c.managementAPI.ResourceGroup()
 	query := &management.ResourceGroupQuery{}
-	groups, err := resourceGroupApi.List(query)
+	groups, err := resourceGroupAPI.List(query)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list resource groups")
 	}
 	return groups, nil
 }
 
-func (c *Client) loadResourceManagementApi() error {
+func (c *Client) loadResourceManagementAPI() error {
 	api, err := management.New(c.ssn)
 	if err != nil {
 		return errors.Wrap(err, "failed to load resource management apis")
 	}
-	c.managementApi = api
+	c.managementAPI = api
 	return nil
 }
 
-func (c *Client) loadResourceControllerApi() error {
+func (c *Client) loadResourceControllerAPI() error {
 	api, err := controller.New(c.ssn)
 	if err != nil {
 		return errors.Wrap(err, "failed to load resource controller apis")
 	}
-	c.controllerApi = api
+	c.controllerAPI = api
 	return nil
 }
 
-func (c *Client) loadCloudInternetServicesApi() error {
+func (c *Client) loadCloudInternetServicesAPI() error {
 	api, err := cisv1.New(c.ssn)
 	if err != nil {
 		return errors.Wrap(err, "failed to load internet services apis")
 	}
-	c.cisApi = api
+	c.cisAPI = api
 	return nil
 }
