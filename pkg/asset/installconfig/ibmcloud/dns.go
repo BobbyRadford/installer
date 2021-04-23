@@ -2,6 +2,7 @@ package ibmcloud
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -9,39 +10,55 @@ import (
 	survey "gopkg.in/AlecAivazis/survey.v1"
 )
 
-// GetBaseDomain returns a base domain chosen from among the project's public DNS zones.
-func GetBaseDomain(project string) (string, error) {
+// Zone represents a DNS Zone
+type Zone struct {
+	Name           string
+	CISInstanceCRN string
+}
+
+// GetDNSZone returns a DNS Zone chosen by survey.
+func GetDNSZone() (*Zone, error) {
 	client, err := NewClient(context.TODO())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	publicZones, err := client.GetPublicDomains(ctx, project)
+	publicZones, err := client.GetDNSZones(ctx)
 	if err != nil {
-		return "", errors.Wrap(err, "could not retrieve base domains")
+		return nil, errors.Wrap(err, "could not retrieve base domains")
 	}
 	if len(publicZones) == 0 {
-		return "", errors.New("no domain names found in project")
+		return nil, errors.New("no domain names found in project")
 	}
-	sort.Strings(publicZones)
 
-	var domain string
+	var options []string
+	var optionToZoneMap = make(map[string]*Zone, len(publicZones))
+	for _, zone := range publicZones {
+		option := fmt.Sprintf("%s (%s)", zone.Name, zone.CISInstanceName)
+		optionToZoneMap[option] = &Zone{
+			Name:           zone.Name,
+			CISInstanceCRN: zone.CISInstanceCRN,
+		}
+		options = append(options, option)
+	}
+
+	var zoneChoice string
 	if err := survey.AskOne(&survey.Select{
 		Message: "Base Domain",
 		Help:    "The base domain of the cluster. All DNS records will be sub-domains of this base and will also include the cluster name.\n\nIf you don't see you intended base-domain listed, create a new public hosted zone and rerun the installer.",
-		Options: publicZones,
-	}, &domain, func(ans interface{}) error {
+		Options: options,
+	}, &zoneChoice, func(ans interface{}) error {
 		choice := ans.(string)
-		i := sort.SearchStrings(publicZones, choice)
-		if i == len(publicZones) || publicZones[i] != choice {
+		i := sort.SearchStrings(options, choice)
+		if i == len(publicZones) || options[i] != choice {
 			return errors.Errorf("invalid base domain %q", choice)
 		}
 		return nil
 	}); err != nil {
-		return "", errors.Wrap(err, "failed UserInput")
+		return nil, errors.Wrap(err, "failed UserInput")
 	}
 
-	return domain, nil
+	return optionToZoneMap[zoneChoice], nil
 }

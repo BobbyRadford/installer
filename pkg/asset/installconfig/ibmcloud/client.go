@@ -16,7 +16,7 @@ import (
 
 // API represents the calls made to the API.
 type API interface {
-	GetPublicDomains(ctx context.Context, project string) ([]string, error)
+	GetDNSZones(ctx context.Context) ([]DNSZonesResponse, error)
 	GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error)
 }
 
@@ -75,8 +75,15 @@ func (c *Client) loadCloudAPIs() error {
 	return nil
 }
 
-// GetPublicDomains returns all of the domains from among the resource group's public DNS zones managed by CIS.
-func (c *Client) GetPublicDomains(ctx context.Context, project string) ([]string, error) {
+// DNSZonesResponse is the response type for the GetPublicZones function.
+type DNSZonesResponse struct {
+	Name            string
+	CISInstanceCRN  string
+	CISInstanceName string
+}
+
+// GetDNSZones returns all of the DNS zones managed by CIS.
+func (c *Client) GetDNSZones(ctx context.Context) ([]DNSZonesResponse, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
@@ -91,7 +98,7 @@ func (c *Client) GetPublicDomains(ctx context.Context, project string) ([]string
 		return nil, errors.Wrap(err, "failed to get cis instances")
 	}
 
-	var allZones []cisv1.Zone
+	var allZones []DNSZonesResponse
 	zonesAPI := c.cisAPI.Zones()
 	for _, instance := range cisInstances {
 		crnstr := instance.Crn.String()
@@ -100,15 +107,17 @@ func (c *Client) GetPublicDomains(ctx context.Context, project string) ([]string
 			return nil, errors.Wrap(err, "failed to list dns zones")
 		}
 
-		allZones = append(allZones, zones...)
+		for _, zone := range zones {
+			zoneStruct := DNSZonesResponse{
+				Name:            zone.Name,
+				CISInstanceCRN:  instance.Crn.String(),
+				CISInstanceName: instance.Name,
+			}
+			allZones = append(allZones, zoneStruct)
+		}
 	}
 
-	var zoneNames []string
-	for _, zone := range allZones {
-		zoneNames = append(zoneNames, zone.Name)
-	}
-
-	return zoneNames, nil
+	return allZones, nil
 }
 
 // GetResourceGroups gets the list of resource groups.

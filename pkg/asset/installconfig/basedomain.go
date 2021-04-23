@@ -64,10 +64,12 @@ func (a *baseDomain) Generate(parents asset.Parents) error {
 			return err
 		}
 	case ibmcloud.Name:
-		a.BaseDomain, err = ibmcloudconfig.GetBaseDomain(platform.IBMCloud.ResourceGroupID)
+		zone, err := ibmcloudconfig.GetDNSZone()
 		if err != nil {
 			return err
 		}
+		a.BaseDomain = zone.Name
+		return platform.IBMCloud.SetBaseDomain(zone.CISInstanceCRN)
 	default:
 		//Do nothing
 	}

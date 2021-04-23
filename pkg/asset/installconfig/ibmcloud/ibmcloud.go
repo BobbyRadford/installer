@@ -24,7 +24,7 @@ func Platform() (*ibmcloud.Platform, error) {
 		return nil, err
 	}
 
-	project, err := selectResourceGroup(ctx, client)
+	resourceGroup, err := selectResourceGroup(ctx, client)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func Platform() (*ibmcloud.Platform, error) {
 	}
 
 	return &ibmcloud.Platform{
-		ResourceGroupID: project,
+		ResourceGroupID: resourceGroup,
 		Region:          region,
 	}, nil
 }
