@@ -14,6 +14,9 @@ type Platform struct {
 	// CISInstanceCRN is the Cloud Internet Services CRN of the base domain DNS
 	// zone.
 	CISInstanceCRN string `json:"cisInstanceCRN"`
+
+	// ClusterOSImage is the name of the custom RHCOS image.
+	ClusterOSImage string `json:"clusterOSImage"`
 }
 
 // SetBaseDomain sets the CISInstanceCRN.
