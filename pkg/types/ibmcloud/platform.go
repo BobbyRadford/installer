@@ -1,15 +1,18 @@
 package ibmcloud
 
-// Platform stores all the global configuration that all machinesets
-// use.
+// Platform stores all the global configuration that all machinesets use.
 type Platform struct {
-	// ResourceGroupID is the the resource group that will be used for the cluster.
-	ResourceGroupID string `json:"resourceGroupID"`
+	// ResourceGroup is the name of an existing resource group where the cluster
+	// and all required resources will be created.
+	// +optional
+	ResourceGroup string `json:"resourceGroup,omitempty"`
 
-	// Region specifies the IBM Cloud region where the cluster will be created.
+	// Region specifies the IBM Cloud region where the cluster will be
+	// created.
 	Region string `json:"region"`
 
-	// CISInstanceCRN is the Cloud Internet Services CRN of the base domain DNS zone.
+	// CISInstanceCRN is the Cloud Internet Services CRN of the base domain DNS
+	// zone.
 	CISInstanceCRN string `json:"cisInstanceCRN"`
 }
 

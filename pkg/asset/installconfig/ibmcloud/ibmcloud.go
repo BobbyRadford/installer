@@ -35,8 +35,8 @@ func Platform() (*ibmcloud.Platform, error) {
 	}
 
 	return &ibmcloud.Platform{
-		ResourceGroupID: resourceGroup,
-		Region:          region,
+		ResourceGroup: resourceGroup,
+		Region:        region,
 	}, nil
 }
 

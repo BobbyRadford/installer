@@ -21,7 +21,7 @@ func Validate(client API, ic *types.InstallConfig) error {
 func validateResourceGroup(client API, ic *types.InstallConfig, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if ic.IBMCloud.ResourceGroupID != "" {
+	if ic.IBMCloud.ResourceGroup != "" {
 		resourceGroups, err := client.GetResourceGroups(context.TODO())
 		if err != nil {
 			return append(allErrs, field.InternalError(fieldPath.Child("resourceGroup"), err))
@@ -29,14 +29,14 @@ func validateResourceGroup(client API, ic *types.InstallConfig, fieldPath *field
 
 		found := false
 		for _, rg := range resourceGroups {
-			logrus.Infof("matching... %s to %s", rg.ID, ic.IBMCloud.ResourceGroupID)
-			if rg.ID == ic.IBMCloud.ResourceGroupID {
+			logrus.Infof("matching... %s to %s", rg.ID, ic.IBMCloud.ResourceGroup)
+			if rg.ID == ic.IBMCloud.ResourceGroup {
 				found = true
 			}
 		}
 
 		if !found {
-			return append(allErrs, field.Invalid(fieldPath.Child("resourceGroup"), ic.IBMCloud.ResourceGroupID, "invalid resource group ID"))
+			return append(allErrs, field.Invalid(fieldPath.Child("resourceGroup"), ic.IBMCloud.ResourceGroup, "invalid resource group ID"))
 		}
 	}
 
