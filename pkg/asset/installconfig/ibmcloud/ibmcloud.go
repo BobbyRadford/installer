@@ -139,7 +139,7 @@ func selectClusterOSImage(ctx context.Context, client *Client) (string, error) {
 		return "", err
 	}
 
-	if customImages == nil || len(customImages) == 0 {
+	if len(customImages) == 0 {
 		return "", errors.New("could not find custom RHCOS image")
 	}
 

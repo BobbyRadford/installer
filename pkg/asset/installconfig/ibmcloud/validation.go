@@ -147,7 +147,7 @@ func validateSubnetZone(client API, subnetID string, validZones []string, path *
 	allErrs := field.ErrorList{}
 	if subnet, err := client.GetSubnet(context.TODO(), subnetID); err == nil {
 		zoneName := *subnet.Zone.Name
-		if contains(validZones, zoneName) != true {
+		if !contains(validZones, zoneName) {
 			allErrs = append(allErrs, field.Invalid(path.Child("subnets"), subnetID, fmt.Sprintf("subnet is not in expected zones: %s", validZones)))
 		}
 	} else {

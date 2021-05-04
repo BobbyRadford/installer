@@ -50,7 +50,6 @@ var (
 	internalErrorVPC              = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "internal-error-vpc" }
 	notFoundVPCResourceGroup      = func(ic *types.InstallConfig) { ic.IBMCloud.VPCResourceGroup = "not-found" }
 	internalErrorVPCResourceGroup = func(ic *types.InstallConfig) { ic.IBMCloud.VPCResourceGroup = "internal-error-resource-group" }
-	emptySubnets                  = func(ic *types.InstallConfig) { ic.IBMCloud.Subnets = []string{} }
 	subnetInvalidZone             = func(ic *types.InstallConfig) { ic.IBMCloud.Subnets = []string{"subnet-invalid-zone"} }
 )
 

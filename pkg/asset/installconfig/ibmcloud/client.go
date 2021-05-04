@@ -252,9 +252,9 @@ func (c *Client) GetCustomImageByName(ctx context.Context, imageName string) (*v
 	}
 
 	var image *vpcv1.Image
-	for _, i := range customImages {
+	for idx, i := range customImages {
 		if *i.Name == imageName {
-			image = &i
+			image = &customImages[idx]
 			break
 		}
 	}
@@ -289,9 +289,9 @@ func (c *Client) GetVPCByName(ctx context.Context, vpcName string, resourceGroup
 			return nil, err
 		}
 
-		for _, vpc := range vpcCollection.Vpcs {
+		for idx, vpc := range vpcCollection.Vpcs {
 			if *vpc.Name == vpcName {
-				foundVPC = &vpc
+				foundVPC = &vpcCollection.Vpcs[idx]
 				break
 			}
 		}
