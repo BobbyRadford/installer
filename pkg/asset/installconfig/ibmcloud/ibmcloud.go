@@ -63,13 +63,13 @@ func selectResourceGroup(ctx context.Context, client *Client) (string, error) {
 	}
 
 	var options []string
-	ids := make(map[string]string)
+	names := make(map[string]string)
 
 	var defaultValue string
 
 	for _, group := range groups {
 		option := fmt.Sprintf("%s (%s)", group.Name, group.ID)
-		ids[option] = group.ID
+		names[option] = group.Name
 		if group.ID == defaultResourceGroup.ID {
 			defaultValue = option
 		}
@@ -88,7 +88,7 @@ func selectResourceGroup(ctx context.Context, client *Client) (string, error) {
 			},
 		},
 	}, &selectedResourceGroup)
-	return ids[selectedResourceGroup], err
+	return names[selectedResourceGroup], err
 }
 
 func selectRegion(client *Client) (string, error) {
