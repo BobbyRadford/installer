@@ -32,7 +32,7 @@ func validatePlatform(client API, ic *types.InstallConfig, path *field.Path) fie
 		allErrs = append(allErrs, validateResourceGroup(client, ic, path)...)
 	}
 
-	if ic.Platform.IBMCloud.VPC != "" || ic.Platform.IBMCloud.VPCResourceGroup != "" || len(ic.Platform.IBMCloud.Subnets) > 0 {
+	if ic.Platform.IBMCloud.VPC != "" || len(ic.Platform.IBMCloud.Subnets) > 0 {
 		allErrs = append(allErrs, validateNetworking(client, ic, path)...)
 	}
 
@@ -104,17 +104,8 @@ func validateClusterOSImage(client API, imageName string, path *field.Path) fiel
 func validateNetworking(client API, ic *types.InstallConfig, path *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	platform := ic.Platform.IBMCloud
-	resourceGroup, err := client.GetResourceGroup(context.TODO(), platform.VPCResourceGroup)
-	if err != nil {
-		if err.Error() == fmt.Sprintf("Given resource Group : \"%s\" doesn't exist", platform.VPCResourceGroup) {
-			allErrs = append(allErrs, field.NotFound(path.Child("vpcResourceGroup"), platform.VPCResourceGroup))
-		} else {
-			allErrs = append(allErrs, field.InternalError(path.Child("vpcResourceGroup"), err))
-		}
-		return allErrs
-	}
 
-	_, err = client.GetVPCByName(context.TODO(), platform.VPC, resourceGroup.ID)
+	_, err := client.GetVPC(context.TODO(), platform.VPC)
 	if err != nil {
 		if err.Error() == fmt.Sprintf("vpc not found: \"%s\"", platform.VPC) {
 			allErrs = append(allErrs, field.NotFound(path.Child("vpc"), platform.VPC))

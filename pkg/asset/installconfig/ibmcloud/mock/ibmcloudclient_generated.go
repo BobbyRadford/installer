@@ -141,19 +141,19 @@ func (mr *MockAPIMockRecorder) GetSubnet(ctx, subnetID interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnet", reflect.TypeOf((*MockAPI)(nil).GetSubnet), ctx, subnetID)
 }
 
-// GetVPCByName mocks base method
-func (m *MockAPI) GetVPCByName(ctx context.Context, vpcName, resourceGroupID string) (*vpcv1.VPC, error) {
+// GetVPC mocks base method
+func (m *MockAPI) GetVPC(ctx context.Context, vpcID string) (*vpcv1.VPC, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVPCByName", ctx, vpcName, resourceGroupID)
+	ret := m.ctrl.Call(m, "GetVPC", ctx, vpcID)
 	ret0, _ := ret[0].(*vpcv1.VPC)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetVPCByName indicates an expected call of GetVPCByName
-func (mr *MockAPIMockRecorder) GetVPCByName(ctx, vpcName, resourceGroupID interface{}) *gomock.Call {
+// GetVPC indicates an expected call of GetVPC
+func (mr *MockAPIMockRecorder) GetVPC(ctx, vpcID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVPCByName", reflect.TypeOf((*MockAPI)(nil).GetVPCByName), ctx, vpcName, resourceGroupID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVPC", reflect.TypeOf((*MockAPI)(nil).GetVPC), ctx, vpcID)
 }
 
 // GetVPCZonesForRegion mocks base method

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/golang/mock/gomock"
 	"github.com/openshift/installer/pkg/asset/installconfig/ibmcloud/mock"
@@ -24,8 +23,6 @@ var (
 	validDNSZoneID               = "valid-zone-id"
 	validBaseDomain              = "valid.base.domain"
 	validVPC                     = "valid-vpc"
-	validVPCResourceGroup        = "valid-vpc-resource-group"
-	validVPCResourceGroupID      = "valid-vpc-resource-group-id"
 	validPublicSubnetUSSouth1ID  = "public-subnet-us-south-1-id"
 	validPublicSubnetUSSouth2ID  = "public-subnet-us-south-2-id"
 	validPrivateSubnetUSSouth1ID = "private-subnet-us-south-1-id"
@@ -43,14 +40,11 @@ var (
 	notFoundClusterOSImage = func(ic *types.InstallConfig) { ic.IBMCloud.ClusterOSImage = "not-found" }
 	validVPCConfig         = func(ic *types.InstallConfig) {
 		ic.IBMCloud.VPC = validVPC
-		ic.IBMCloud.VPCResourceGroup = validVPCResourceGroup
 		ic.IBMCloud.Subnets = validSubnets
 	}
-	notFoundVPC                   = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "not-found" }
-	internalErrorVPC              = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "internal-error-vpc" }
-	notFoundVPCResourceGroup      = func(ic *types.InstallConfig) { ic.IBMCloud.VPCResourceGroup = "not-found" }
-	internalErrorVPCResourceGroup = func(ic *types.InstallConfig) { ic.IBMCloud.VPCResourceGroup = "internal-error-resource-group" }
-	subnetInvalidZone             = func(ic *types.InstallConfig) { ic.IBMCloud.Subnets = []string{"subnet-invalid-zone"} }
+	notFoundVPC       = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "not-found" }
+	internalErrorVPC  = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "internal-error-vpc" }
+	subnetInvalidZone = func(ic *types.InstallConfig) { ic.IBMCloud.Subnets = []string{"subnet-invalid-zone"} }
 )
 
 func validInstallConfig() *types.InstallConfig {
@@ -122,22 +116,12 @@ func TestValidate(t *testing.T) {
 			errorMsg: "",
 		},
 		{
-			name:     "not found vpcResourceGroup",
-			edits:    editFunctions{validVPCConfig, notFoundVPCResourceGroup},
-			errorMsg: `^platorm\.ibmcloud\.vpcResourceGroup: Not found: "not-found"$`,
-		},
-		{
-			name:     "internal error vpcResourceGroup",
-			edits:    editFunctions{validVPCConfig, internalErrorVPCResourceGroup},
-			errorMsg: `^platorm\.ibmcloud\.vpcResourceGroup: Internal error$`,
-		},
-		{
-			name:     "not found vpcResourceGroup",
+			name:     "not found vpc",
 			edits:    editFunctions{validVPCConfig, notFoundVPC},
 			errorMsg: `^platorm\.ibmcloud\.vpc: Not found: \"not-found\"$`,
 		},
 		{
-			name:     "internal error vpcResourceGroup",
+			name:     "internal error vpc",
 			edits:    editFunctions{validVPCConfig, internalErrorVPC},
 			errorMsg: `^platorm\.ibmcloud\.vpc: Internal error$`,
 		},
@@ -162,13 +146,9 @@ func TestValidate(t *testing.T) {
 	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), validClusterOSImage).Return(&vpcv1.Image{}, nil).AnyTimes()
 	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), gomock.Not(validClusterOSImage)).Return(nil, fmt.Errorf("")).AnyTimes()
 
-	ibmcloudClient.EXPECT().GetResourceGroup(gomock.Any(), validVPCResourceGroup).Return(&models.ResourceGroup{ID: validVPCResourceGroupID}, nil).AnyTimes()
-	ibmcloudClient.EXPECT().GetResourceGroup(gomock.Any(), "not-found").Return(nil, fmt.Errorf("Given resource Group : \"not-found\" doesn't exist")).AnyTimes()
-	ibmcloudClient.EXPECT().GetResourceGroup(gomock.Any(), "internal-error-resource-group").Return(nil, fmt.Errorf("")).AnyTimes()
-
-	ibmcloudClient.EXPECT().GetVPCByName(gomock.Any(), validVPC, validVPCResourceGroupID).Return(&vpcv1.VPC{}, nil).AnyTimes()
-	ibmcloudClient.EXPECT().GetVPCByName(gomock.Any(), "not-found", validVPCResourceGroupID).Return(nil, fmt.Errorf("vpc not found: \"not-found\""))
-	ibmcloudClient.EXPECT().GetVPCByName(gomock.Any(), "internal-error-vpc", validVPCResourceGroupID).Return(nil, fmt.Errorf(""))
+	ibmcloudClient.EXPECT().GetVPC(gomock.Any(), validVPC).Return(&vpcv1.VPC{}, nil).AnyTimes()
+	ibmcloudClient.EXPECT().GetVPC(gomock.Any(), "not-found").Return(nil, fmt.Errorf("vpc not found: \"not-found\""))
+	ibmcloudClient.EXPECT().GetVPC(gomock.Any(), "internal-error-vpc").Return(nil, fmt.Errorf(""))
 
 	ibmcloudClient.EXPECT().GetSubnet(gomock.Any(), validPublicSubnetUSSouth1ID).Return(&vpcv1.Subnet{Zone: &vpcv1.ZoneReference{Name: &validZoneUSSouth1}}, nil).AnyTimes()
 	ibmcloudClient.EXPECT().GetSubnet(gomock.Any(), validPublicSubnetUSSouth2ID).Return(&vpcv1.Subnet{Zone: &vpcv1.ZoneReference{Name: &validZoneUSSouth1}}, nil).AnyTimes()

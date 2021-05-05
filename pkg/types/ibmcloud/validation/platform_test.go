@@ -99,7 +99,6 @@ func TestValidatePlatform(t *testing.T) {
 				p := validMinimalPlatform()
 				p.VPC = "valid-vpc-name"
 				p.Subnets = []string{"valid-compute-subnet-id", "valid-control-subnet-id"}
-				p.VPCResourceGroup = "valid-vpc-resource-group"
 				return p
 			}(),
 			valid: true,
@@ -109,7 +108,6 @@ func TestValidatePlatform(t *testing.T) {
 			platform: func() *ibmcloud.Platform {
 				p := validMinimalPlatform()
 				p.Subnets = []string{"valid-compute-subnet-id", "valid-control-subnet-id"}
-				p.VPCResourceGroup = "valid-vpc-resource-group"
 				return p
 			}(),
 			valid: false,
@@ -119,44 +117,6 @@ func TestValidatePlatform(t *testing.T) {
 			platform: func() *ibmcloud.Platform {
 				p := validMinimalPlatform()
 				p.VPC = "valid-vpc-name"
-				p.VPCResourceGroup = "valid-vpc-resource-group"
-				return p
-			}(),
-			valid: false,
-		},
-		{
-			name: "invalid vpc config missing vpcResourceGroup",
-			platform: func() *ibmcloud.Platform {
-				p := validMinimalPlatform()
-				p.VPC = "valid-vpc-name"
-				p.Subnets = []string{"valid-compute-subnet-id", "valid-control-subnet-id"}
-				return p
-			}(),
-			valid: false,
-		},
-		{
-			name: "invalid vpc config missing vpcResourceGroup and subnets",
-			platform: func() *ibmcloud.Platform {
-				p := validMinimalPlatform()
-				p.VPC = "valid-vpc-name"
-				return p
-			}(),
-			valid: false,
-		},
-		{
-			name: "invalid vpc config missing vpc and vpcResourceGroup",
-			platform: func() *ibmcloud.Platform {
-				p := validMinimalPlatform()
-				p.Subnets = []string{"valid-compute-subnet-id", "valid-control-subnet-id"}
-				return p
-			}(),
-			valid: false,
-		},
-		{
-			name: "invalid vpc config missing vpc and subnets",
-			platform: func() *ibmcloud.Platform {
-				p := validMinimalPlatform()
-				p.VPCResourceGroup = "valid-vpc-resource-group"
 				return p
 			}(),
 			valid: false,

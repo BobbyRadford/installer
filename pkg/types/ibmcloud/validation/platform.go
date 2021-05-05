@@ -73,13 +73,10 @@ func ValidateMachinePool(p *ibmcloud.Platform, defaultMachinePlatform *ibmcloud.
 // ValidateVPCConfig ...
 func ValidateVPCConfig(p *ibmcloud.Platform, path *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
-	details := "if any one of the fields vpc, vpcResourceGroup, or subnets is defined, they all must be defined"
-	if p.VPC != "" || p.VPCResourceGroup != "" || len(p.Subnets) > 0 {
+	details := "if either one of the vpc or subnets fields is defined, they both must be defined"
+	if p.VPC != "" || len(p.Subnets) > 0 {
 		if p.VPC == "" {
 			allErrs = append(allErrs, field.Required(path.Child("vpc"), details))
-		}
-		if p.VPCResourceGroup == "" {
-			allErrs = append(allErrs, field.Required(path.Child("vpcResourceGroup"), details))
 		}
 		if len(p.Subnets) == 0 {
 			allErrs = append(allErrs, field.Required(path.Child("subnets"), details))

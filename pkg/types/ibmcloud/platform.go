@@ -24,13 +24,9 @@ type Platform struct {
 	// +optional
 	DefaultMachinePlatform *MachinePool `json:"defaultMachinePlatform,omitempty"`
 
-	// VPC is the name of an existing VPC network.
+	// VPC is the ID of an existing VPC network.
 	// +optional
 	VPC string `json:"vpc,omitempty"`
-
-	// VPCResourceGroup is he name of the existing VPC's resource group.
-	// +optional
-	VPCResourceGroup string `json:"vpcResourceGroup,omitempty"`
 
 	// Subnets is a list of existing subnet IDs. Leave unset and the installer
 	// will create new subnets in the VPC network on your behalf.

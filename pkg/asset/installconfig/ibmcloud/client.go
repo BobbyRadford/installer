@@ -28,7 +28,7 @@ type API interface {
 	GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error)
 	GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroup, error)
 	GetSubnet(ctx context.Context, subnetID string) (*vpcv1.Subnet, error)
-	GetVPCByName(ctx context.Context, vpcName string, resourceGroupID string) (*vpcv1.VPC, error)
+	GetVPC(ctx context.Context, vpcID string) (*vpcv1.VPC, error)
 	GetVPCZonesForRegion(ctx context.Context, region string) ([]string, error)
 	GetZoneIDByName(ctx context.Context, crn string, name string) (string, error)
 }
@@ -265,8 +265,8 @@ func (c *Client) GetCustomImageByName(ctx context.Context, imageName string) (*v
 	return image, nil
 }
 
-// GetVPCByName gets a VPC by name within a specific resource group.
-func (c *Client) GetVPCByName(ctx context.Context, vpcName string, resourceGroupID string) (*vpcv1.VPC, error) {
+// GetVPC gets a VPC by its ID.
+func (c *Client) GetVPC(ctx context.Context, vpcID string) (*vpcv1.VPC, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
@@ -275,33 +275,22 @@ func (c *Client) GetVPCByName(ctx context.Context, vpcName string, resourceGroup
 		return nil, err
 	}
 
-	vpcOptions := &vpcv1.ListVpcsOptions{ResourceGroupID: &resourceGroupID}
-
 	for _, region := range regions {
-		var foundVPC *vpcv1.VPC
 		err := c.vpcAPI.SetServiceURL(fmt.Sprintf("%s/v1", *region.Endpoint))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to set vpc api service url")
 		}
 
-		vpcCollection, _, err := c.vpcAPI.ListVpcsWithContext(ctx, vpcOptions)
-		if err != nil {
-			return nil, err
-		}
-
-		for idx, vpc := range vpcCollection.Vpcs {
-			if *vpc.Name == vpcName {
-				foundVPC = &vpcCollection.Vpcs[idx]
-				break
+		if vpc, _, err := c.vpcAPI.GetVPC(c.vpcAPI.NewGetVPCOptions(vpcID)); err != nil {
+			if err.Error() != "VPC not found" {
+				return nil, err
 			}
-		}
-
-		if foundVPC != nil {
-			return foundVPC, nil
+		} else if vpc != nil {
+			return vpc, nil
 		}
 	}
 
-	return nil, fmt.Errorf("vpc not found: %s", vpcName)
+	return nil, fmt.Errorf("vpc not found: %s", vpcID)
 }
 
 // GetVPCZonesForRegion gets the supported zones for a VPC region.
