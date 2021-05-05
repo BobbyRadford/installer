@@ -81,7 +81,7 @@ type MachinePoolPlatform struct {
 	// GCP is the configuration used when installing on GCP
 	GCP *gcp.MachinePool `json:"gcp,omitempty"`
 
-	// GCP is the configuration used when installing on IBM Cloud
+	// IBMCloud is the configuration used when installing on IBM Cloud.
 	IBMCloud *ibmcloud.MachinePool `json:"ibmcloud,omitempty"`
 
 	// Libvirt is the configuration used when installing on libvirt.
