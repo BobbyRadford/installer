@@ -54,7 +54,7 @@ func selectResourceGroup(ctx context.Context, client *Client) (string, error) {
 
 	var defaultResourceGroup *models.ResourceGroup
 	for i := range groups {
-		if groups[i].Name == "Default" {
+		if groups[i].Default {
 			defaultResourceGroup = &groups[i]
 		}
 	}
