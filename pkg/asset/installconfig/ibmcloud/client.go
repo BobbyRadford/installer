@@ -62,7 +62,7 @@ func NewClient(ctx context.Context) (*Client, error) {
 
 	err = client.loadCloudAPIs()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load ibm cloud apis")
+		return nil, errors.Wrap(err, "failed to load IBM Cloud APIs")
 	}
 
 	return client, nil
