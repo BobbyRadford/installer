@@ -34,7 +34,7 @@ func Platform() (*ibmcloud.Platform, error) {
 		return nil, err
 	}
 
-	clusterOSImage, err := selectClusterOSImage(ctx, client)
+	clusterOSImage, err := selectClusterOSImage(ctx, client, region)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func selectResourceGroup(ctx context.Context, client *Client) (string, error) {
 		{
 			Prompt: &survey.Select{
 				Message: "Resource Group ID",
-				Help:    "The resource group id where the cluster will be provisioned. The 'Default' resource group is used if not specified.",
+				Help:    "The resource group id where the cluster will be provisioned. Your default resource group is used if not specified.",
 				Default: defaultValue,
 				Options: options,
 			},
@@ -133,8 +133,8 @@ func selectRegion(client *Client) (string, error) {
 	return selectedRegion, nil
 }
 
-func selectClusterOSImage(ctx context.Context, client *Client) (string, error) {
-	customImages, err := client.GetCustomImages(ctx)
+func selectClusterOSImage(ctx context.Context, client *Client, region string) (string, error) {
+	customImages, err := client.GetCustomImages(ctx, region)
 	if err != nil {
 		return "", err
 	}

@@ -35,10 +35,11 @@ var (
 	}
 	validZoneUSSouth1 = "us-south-1"
 
-	notFoundCISInstanceCRN = func(ic *types.InstallConfig) { ic.IBMCloud.CISInstanceCRN = "not:found" }
-	notFoundBaseDomain     = func(ic *types.InstallConfig) { ic.BaseDomain = "notfound.base.domain" }
-	notFoundClusterOSImage = func(ic *types.InstallConfig) { ic.IBMCloud.ClusterOSImage = "not-found" }
-	validVPCConfig         = func(ic *types.InstallConfig) {
+	notFoundCISInstanceCRN         = func(ic *types.InstallConfig) { ic.IBMCloud.CISInstanceCRN = "not:found" }
+	notFoundBaseDomain             = func(ic *types.InstallConfig) { ic.BaseDomain = "notfound.base.domain" }
+	notFoundInRegionClusterOSImage = func(ic *types.InstallConfig) { ic.IBMCloud.Region = "us-east" }
+	notFoundClusterOSImage         = func(ic *types.InstallConfig) { ic.IBMCloud.ClusterOSImage = "not-found" }
+	validVPCConfig                 = func(ic *types.InstallConfig) {
 		ic.IBMCloud.VPC = validVPC
 		ic.IBMCloud.Subnets = validSubnets
 	}
@@ -106,6 +107,11 @@ func TestValidate(t *testing.T) {
 			errorMsg: fmt.Sprintf("^platorm.ibmcloud.cisInstanceCRN: Invalid value: \"%s\": the cis instance does not have an active DNS zone for the base domain: %s$", validCISCRN, "notfound.base.domain"),
 		},
 		{
+			name:     "not found clusterOSImage in region",
+			edits:    editFunctions{notFoundInRegionClusterOSImage},
+			errorMsg: `^platorm\.ibmcloud\.clusterOSImage: Not found: "valid-rhcos-image"$`,
+		},
+		{
 			name:     "not found clusterOSImage",
 			edits:    editFunctions{notFoundClusterOSImage},
 			errorMsg: `^platorm\.ibmcloud\.clusterOSImage: Not found: "not-found"$`,
@@ -143,8 +149,9 @@ func TestValidate(t *testing.T) {
 	ibmcloudClient.EXPECT().GetZoneIDByName(gomock.Any(), validCISCRN, validBaseDomain).Return(validDNSZoneID, nil).AnyTimes()
 	ibmcloudClient.EXPECT().GetZoneIDByName(gomock.Any(), validCISCRN, gomock.Not(validBaseDomain)).Return("", fmt.Errorf("")).AnyTimes()
 
-	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), validClusterOSImage).Return(&vpcv1.Image{}, nil).AnyTimes()
-	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), gomock.Not(validClusterOSImage)).Return(nil, fmt.Errorf("")).AnyTimes()
+	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), validClusterOSImage, validRegion).Return(&vpcv1.Image{}, nil).AnyTimes()
+	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), validClusterOSImage, gomock.Not(validRegion)).Return(nil, fmt.Errorf("")).AnyTimes()
+	ibmcloudClient.EXPECT().GetCustomImageByName(gomock.Any(), gomock.Not(validClusterOSImage), validRegion).Return(nil, fmt.Errorf("")).AnyTimes()
 
 	ibmcloudClient.EXPECT().GetVPC(gomock.Any(), validVPC).Return(&vpcv1.VPC{}, nil).AnyTimes()
 	ibmcloudClient.EXPECT().GetVPC(gomock.Any(), "not-found").Return(nil, fmt.Errorf("vpc not found: \"not-found\""))

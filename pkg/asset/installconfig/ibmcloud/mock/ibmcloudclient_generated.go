@@ -52,33 +52,33 @@ func (mr *MockAPIMockRecorder) GetCISInstance(ctx, crnstr interface{}) *gomock.C
 }
 
 // GetCustomImageByName mocks base method
-func (m *MockAPI) GetCustomImageByName(ctx context.Context, imageName string) (*vpcv1.Image, error) {
+func (m *MockAPI) GetCustomImageByName(ctx context.Context, imageName, region string) (*vpcv1.Image, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCustomImageByName", ctx, imageName)
+	ret := m.ctrl.Call(m, "GetCustomImageByName", ctx, imageName, region)
 	ret0, _ := ret[0].(*vpcv1.Image)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCustomImageByName indicates an expected call of GetCustomImageByName
-func (mr *MockAPIMockRecorder) GetCustomImageByName(ctx, imageName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetCustomImageByName(ctx, imageName, region interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomImageByName", reflect.TypeOf((*MockAPI)(nil).GetCustomImageByName), ctx, imageName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomImageByName", reflect.TypeOf((*MockAPI)(nil).GetCustomImageByName), ctx, imageName, region)
 }
 
 // GetCustomImages mocks base method
-func (m *MockAPI) GetCustomImages(ctx context.Context) ([]vpcv1.Image, error) {
+func (m *MockAPI) GetCustomImages(ctx context.Context, region string) ([]vpcv1.Image, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCustomImages", ctx)
+	ret := m.ctrl.Call(m, "GetCustomImages", ctx, region)
 	ret0, _ := ret[0].([]vpcv1.Image)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCustomImages indicates an expected call of GetCustomImages
-func (mr *MockAPIMockRecorder) GetCustomImages(ctx interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetCustomImages(ctx, region interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomImages", reflect.TypeOf((*MockAPI)(nil).GetCustomImages), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomImages", reflect.TypeOf((*MockAPI)(nil).GetCustomImages), ctx, region)
 }
 
 // GetDNSZones mocks base method

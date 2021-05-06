@@ -26,7 +26,7 @@ func validatePlatform(client API, ic *types.InstallConfig, path *field.Path) fie
 
 	allErrs = append(allErrs, validateRegion(client, ic.Platform.IBMCloud.Region, path)...)
 	allErrs = append(allErrs, validateCISInstanceCRN(client, ic.BaseDomain, ic.Platform.IBMCloud, path)...)
-	allErrs = append(allErrs, validateClusterOSImage(client, ic.Platform.IBMCloud.ClusterOSImage, path)...)
+	allErrs = append(allErrs, validateClusterOSImage(client, ic.Platform.IBMCloud.ClusterOSImage, ic.Platform.IBMCloud.Region, path)...)
 
 	if ic.Platform.IBMCloud.ResourceGroup != "" {
 		allErrs = append(allErrs, validateResourceGroup(client, ic, path)...)
@@ -92,9 +92,9 @@ func validateCISInstanceCRN(client API, baseDomain string, platform *ibmcloud.Pl
 	return allErrs
 }
 
-func validateClusterOSImage(client API, imageName string, path *field.Path) field.ErrorList {
+func validateClusterOSImage(client API, imageName string, region string, path *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
-	customImage, _ := client.GetCustomImageByName(context.TODO(), imageName)
+	customImage, _ := client.GetCustomImageByName(context.TODO(), imageName, region)
 	if customImage == nil {
 		allErrs = append(allErrs, field.NotFound(path.Child("clusterOSImage"), imageName))
 	}

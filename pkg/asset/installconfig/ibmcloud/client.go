@@ -22,8 +22,8 @@ import (
 // API represents the calls made to the API.
 type API interface {
 	GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstance, error)
-	GetCustomImageByName(ctx context.Context, imageName string) (*vpcv1.Image, error)
-	GetCustomImages(ctx context.Context) ([]vpcv1.Image, error)
+	GetCustomImageByName(ctx context.Context, imageName string, region string) (*vpcv1.Image, error)
+	GetCustomImages(ctx context.Context, region string) ([]vpcv1.Image, error)
 	GetDNSZones(ctx context.Context) ([]ibmcloudtypes.DNSZoneResponse, error)
 	GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error)
 	GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroup, error)
@@ -214,46 +214,43 @@ func (c *Client) GetSubnet(ctx context.Context, subnetID string) (*vpcv1.Subnet,
 	return subnet, nil
 }
 
-// GetCustomImages gets a list of custom images across all regions. If the image
+// GetCustomImages gets a list of custom images within a region. If the image
 // status is not "available" it is omitted.
-func (c *Client) GetCustomImages(ctx context.Context) ([]vpcv1.Image, error) {
+func (c *Client) GetCustomImages(ctx context.Context, region string) ([]vpcv1.Image, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	regions, err := c.getVPCRegions(ctx)
+	vpcRegion, err := c.getVPCRegionByName(ctx, region)
 	if err != nil {
 		return nil, err
 	}
 
 	images := []vpcv1.Image{}
-	for _, region := range regions {
-		privateImages, err := c.listPrivateImagesForRegion(ctx, region)
-		if err != nil {
-			return nil, err
-		}
-		for _, image := range privateImages {
-			if *image.Status == vpcv1.ImageStatusAvailableConst {
-				images = append(images, image)
-			}
+	privateImages, err := c.listPrivateImagesForRegion(ctx, *vpcRegion)
+	if err != nil {
+		return nil, err
+	}
+	for _, image := range privateImages {
+		if *image.Status == vpcv1.ImageStatusAvailableConst {
+			images = append(images, image)
 		}
 	}
 	return images, nil
 }
 
-// GetCustomImageByName gets a custom image using its name. All regions will be
-// searched.
-func (c *Client) GetCustomImageByName(ctx context.Context, imageName string) (*vpcv1.Image, error) {
+// GetCustomImageByName gets a custom image using its name and region.
+func (c *Client) GetCustomImageByName(ctx context.Context, imageName string, region string) (*vpcv1.Image, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	customImages, err := c.GetCustomImages(ctx)
+	customImages, err := c.GetCustomImages(ctx, region)
 	if err != nil {
 		return nil, err
 	}
 
 	var image *vpcv1.Image
 	for idx, i := range customImages {
-		if *i.Name == imageName {
+		if *i.Name == imageName && *i.Status == vpcv1.ImageStatusAvailableConst {
 			image = &customImages[idx]
 			break
 		}
@@ -309,6 +306,11 @@ func (c *Client) GetVPCZonesForRegion(ctx context.Context, region string) ([]str
 		response[idx] = *zone.Name
 	}
 	return response, err
+}
+
+func (c *Client) getVPCRegionByName(ctx context.Context, regionName string) (*vpcv1.Region, error) {
+	region, _, err := c.vpcAPI.GetRegionWithContext(ctx, c.vpcAPI.NewGetRegionOptions(regionName))
+	return region, err
 }
 
 func (c *Client) listPrivateImagesForRegion(ctx context.Context, region vpcv1.Region) ([]vpcv1.Image, error) {
