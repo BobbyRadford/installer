@@ -37,10 +37,10 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 }
 
 // GetCISInstance mocks base method
-func (m *MockAPI) GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstance, error) {
+func (m *MockAPI) GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstanceV2, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCISInstance", ctx, crnstr)
-	ret0, _ := ret[0].(*models.ServiceInstance)
+	ret0, _ := ret[0].(*models.ServiceInstanceV2)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -97,10 +97,10 @@ func (mr *MockAPIMockRecorder) GetDNSZones(ctx interface{}) *gomock.Call {
 }
 
 // GetResourceGroups mocks base method
-func (m *MockAPI) GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error) {
+func (m *MockAPI) GetResourceGroups(ctx context.Context) ([]models.ResourceGroupv2, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResourceGroups", ctx)
-	ret0, _ := ret[0].([]models.ResourceGroup)
+	ret0, _ := ret[0].([]models.ResourceGroupv2)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -112,10 +112,10 @@ func (mr *MockAPIMockRecorder) GetResourceGroups(ctx interface{}) *gomock.Call {
 }
 
 // GetResourceGroup mocks base method
-func (m *MockAPI) GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroup, error) {
+func (m *MockAPI) GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroupv2, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetResourceGroup", ctx, nameOrID)
-	ret0, _ := ret[0].(*models.ResourceGroup)
+	ret0, _ := ret[0].(*models.ResourceGroupv2)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

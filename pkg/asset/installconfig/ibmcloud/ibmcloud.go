@@ -52,7 +52,7 @@ func selectResourceGroup(ctx context.Context, client *Client) (string, error) {
 		return "", errors.Wrap(err, "failed to list resource groups")
 	}
 
-	var defaultResourceGroup *models.ResourceGroup
+	var defaultResourceGroup *models.ResourceGroupv2
 	for i := range groups {
 		if groups[i].Default {
 			defaultResourceGroup = &groups[i]

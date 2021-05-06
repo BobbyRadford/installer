@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/bluemix-go/api/cis/cisv1"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/controller"
-	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev1/management"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/controllerv2"
+	"github.com/IBM-Cloud/bluemix-go/api/resource/resourcev2/managementv2"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/bluemix-go/session"
@@ -21,12 +21,12 @@ import (
 
 // API represents the calls made to the API.
 type API interface {
-	GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstance, error)
+	GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstanceV2, error)
 	GetCustomImageByName(ctx context.Context, imageName string, region string) (*vpcv1.Image, error)
 	GetCustomImages(ctx context.Context, region string) ([]vpcv1.Image, error)
 	GetDNSZones(ctx context.Context) ([]ibmcloudtypes.DNSZoneResponse, error)
-	GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error)
-	GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroup, error)
+	GetResourceGroups(ctx context.Context) ([]models.ResourceGroupv2, error)
+	GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroupv2, error)
 	GetSubnet(ctx context.Context, subnetID string) (*vpcv1.Subnet, error)
 	GetVPC(ctx context.Context, vpcID string) (*vpcv1.VPC, error)
 	GetVPCZonesForRegion(ctx context.Context, region string) ([]string, error)
@@ -36,8 +36,8 @@ type API interface {
 // Client makes calls to the IBM Cloud API.
 type Client struct {
 	ssn           *session.Session
-	managementAPI management.ResourceManagementAPI
-	controllerAPI controller.ResourceControllerAPI
+	managementAPI managementv2.ResourceManagementAPIv2
+	controllerAPI controllerv2.ResourceControllerAPIV2
 	cisAPI        cisv1.CisServiceAPI
 	vpcAPI        *vpcv1.VpcV1
 }
@@ -91,11 +91,11 @@ func (c *Client) loadCloudAPIs() error {
 }
 
 // GetCISInstance gets a specific Cloud Internet Services instance by its CRN.
-func (c *Client) GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstance, error) {
+func (c *Client) GetCISInstance(ctx context.Context, crnstr string) (*models.ServiceInstanceV2, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	resourceController := c.controllerAPI.ResourceServiceInstance()
+	resourceController := c.controllerAPI.ResourceServiceInstanceV2()
 	cisInstance, err := resourceController.GetInstance(crnstr)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get cis instances")
@@ -108,9 +108,9 @@ func (c *Client) GetDNSZones(ctx context.Context) ([]ibmcloudtypes.DNSZoneRespon
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	resourceController := c.controllerAPI.ResourceServiceInstance()
+	resourceController := c.controllerAPI.ResourceServiceInstanceV2()
 
-	cisInstancesQuery := controller.ServiceInstanceQuery{
+	cisInstancesQuery := controllerv2.ServiceInstanceQuery{
 		ServiceID: cisServiceID,
 	}
 
@@ -169,34 +169,35 @@ func (c *Client) GetZoneIDByName(ctx context.Context, crn string, name string) (
 }
 
 // GetResourceGroup gets a resource group by its name or ID.
-func (c *Client) GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroup, error) {
+func (c *Client) GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroupv2, error) {
+	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+
+	groups, err := c.GetResourceGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for idx, rg := range groups {
+		if rg.ID == nameOrID || rg.Name == nameOrID {
+			return &groups[idx], nil
+		}
+	}
+	return nil, fmt.Errorf("Resource Group not found : %s", nameOrID)
+}
+
+// GetResourceGroups gets the list of resource groups.
+func (c *Client) GetResourceGroups(ctx context.Context) ([]models.ResourceGroupv2, error) {
 	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	resourceGroupAPI := c.managementAPI.ResourceGroup()
-	query := &management.ResourceGroupQuery{}
-	// FindByName() returns a slice of groups, but in reality you cannot have
-	// multiple resource groups in a single account with duplicate names. As a
-	// result we assume the slice will always have one element.
-	groups, err := resourceGroupAPI.FindByName(query, nameOrID)
+	query := &managementv2.ResourceGroupQuery{}
+	groups, err := resourceGroupAPI.List(query)
 	if err != nil {
 		if bmxe, ok := err.(bmxerror.Error); ok {
 			return nil, fmt.Errorf(bmxe.Description())
 		}
-		return nil, err
-	}
-	return &groups[0], nil
-}
-
-// GetResourceGroups gets the list of resource groups.
-func (c *Client) GetResourceGroups(ctx context.Context) ([]models.ResourceGroup, error) {
-	_, cancel := context.WithTimeout(ctx, 1*time.Minute)
-	defer cancel()
-
-	resourceGroupAPI := c.managementAPI.ResourceGroup()
-	query := &management.ResourceGroupQuery{}
-	groups, err := resourceGroupAPI.List(query)
-	if err != nil {
 		return nil, err
 	}
 	return groups, nil
@@ -341,7 +342,7 @@ func (c *Client) getVPCRegions(ctx context.Context) ([]vpcv1.Region, error) {
 }
 
 func (c *Client) loadResourceManagementAPI() error {
-	api, err := management.New(c.ssn)
+	api, err := managementv2.New(c.ssn)
 	if err != nil {
 		return errors.Wrap(err, "failed to load resource management apis")
 	}
@@ -350,7 +351,7 @@ func (c *Client) loadResourceManagementAPI() error {
 }
 
 func (c *Client) loadResourceControllerAPI() error {
-	api, err := controller.New(c.ssn)
+	api, err := controllerv2.New(c.ssn)
 	if err != nil {
 		return errors.Wrap(err, "failed to load resource controller apis")
 	}
