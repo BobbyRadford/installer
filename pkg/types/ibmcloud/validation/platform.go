@@ -59,15 +59,9 @@ func ValidatePlatform(p *ibmcloud.Platform, fldPath *field.Path) field.ErrorList
 	allErrs = append(allErrs, ValidateVPCConfig(p, fldPath)...)
 
 	if p.DefaultMachinePlatform != nil {
-		allErrs = append(allErrs, ValidateMachinePool(p, p.DefaultMachinePlatform, fldPath.Child("defaultMachinePlatform"))...)
+		allErrs = append(allErrs, ValidateMachinePool(p.DefaultMachinePlatform, fldPath.Child("defaultMachinePlatform"))...)
 	}
 	return allErrs
-}
-
-// ValidateMachinePool ...
-func ValidateMachinePool(p *ibmcloud.Platform, defaultMachinePlatform *ibmcloud.MachinePool, path *field.Path) field.ErrorList {
-	// TODO: IBM: machine pool validation
-	return field.ErrorList{}
 }
 
 // ValidateVPCConfig ...

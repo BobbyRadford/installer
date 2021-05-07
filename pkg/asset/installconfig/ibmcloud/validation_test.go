@@ -35,6 +35,8 @@ var (
 	}
 	validZoneUSSouth1 = "us-south-1"
 
+	validInstanceProfies = []vpcv1.InstanceProfile{{Name: &[]string{"type-a"}[0]}, {Name: &[]string{"type-b"}[0]}}
+
 	notFoundCISInstanceCRN         = func(ic *types.InstallConfig) { ic.IBMCloud.CISInstanceCRN = "not:found" }
 	notFoundBaseDomain             = func(ic *types.InstallConfig) { ic.BaseDomain = "notfound.base.domain" }
 	notFoundInRegionClusterOSImage = func(ic *types.InstallConfig) { ic.IBMCloud.Region = "us-east" }
@@ -43,9 +45,14 @@ var (
 		ic.IBMCloud.VPC = validVPC
 		ic.IBMCloud.Subnets = validSubnets
 	}
-	notFoundVPC       = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "not-found" }
-	internalErrorVPC  = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "internal-error-vpc" }
-	subnetInvalidZone = func(ic *types.InstallConfig) { ic.IBMCloud.Subnets = []string{"subnet-invalid-zone"} }
+	notFoundVPC            = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "not-found" }
+	internalErrorVPC       = func(ic *types.InstallConfig) { ic.IBMCloud.VPC = "internal-error-vpc" }
+	subnetInvalidZone      = func(ic *types.InstallConfig) { ic.IBMCloud.Subnets = []string{"subnet-invalid-zone"} }
+	machinePoolInvalidType = func(ic *types.InstallConfig) {
+		ic.ControlPlane.Platform.IBMCloud = &ibmcloud.MachinePool{
+			Type: "invalid-type",
+		}
+	}
 )
 
 func validInstallConfig() *types.InstallConfig {
@@ -136,6 +143,11 @@ func TestValidate(t *testing.T) {
 			edits:    editFunctions{validVPCConfig, subnetInvalidZone},
 			errorMsg: `^\Qplatorm.ibmcloud.subnets: Invalid value: "subnet-invalid-zone": subnet is not in expected zones: [us-south-1 us-south-2 us-south-3]\E$`,
 		},
+		{
+			name:     "machine pool invalid type",
+			edits:    editFunctions{validVPCConfig, machinePoolInvalidType},
+			errorMsg: `^\QcontrolPlane.platform.ibmcloud.type: Not found: "invalid-type"\E$`,
+		},
 	}
 
 	mockCtrl := gomock.NewController(t)
@@ -162,6 +174,8 @@ func TestValidate(t *testing.T) {
 	ibmcloudClient.EXPECT().GetSubnet(gomock.Any(), validPrivateSubnetUSSouth1ID).Return(&vpcv1.Subnet{Zone: &vpcv1.ZoneReference{Name: &validZoneUSSouth1}}, nil).AnyTimes()
 	ibmcloudClient.EXPECT().GetSubnet(gomock.Any(), validPrivateSubnetUSSouth2ID).Return(&vpcv1.Subnet{Zone: &vpcv1.ZoneReference{Name: &validZoneUSSouth1}}, nil).AnyTimes()
 	ibmcloudClient.EXPECT().GetSubnet(gomock.Any(), "subnet-invalid-zone").Return(&vpcv1.Subnet{Zone: &vpcv1.ZoneReference{Name: &[]string{"invalid"}[0]}}, nil).AnyTimes()
+
+	ibmcloudClient.EXPECT().GetVSIProfiles(gomock.Any()).Return(validInstanceProfies, nil).AnyTimes()
 
 	ibmcloudClient.EXPECT().GetVPCZonesForRegion(gomock.Any(), validRegion).Return([]string{"us-south-1", "us-south-2", "us-south-3"}, nil).AnyTimes()
 

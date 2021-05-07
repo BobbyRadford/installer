@@ -13,3 +13,6 @@ type DNSZoneResponse struct {
 	// is managed.
 	CISInstanceName string
 }
+
+// EncryptionKeyResponse ...
+type EncryptionKeyResponse struct{}

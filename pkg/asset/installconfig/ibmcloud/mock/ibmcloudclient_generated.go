@@ -96,6 +96,21 @@ func (mr *MockAPIMockRecorder) GetDNSZones(ctx interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDNSZones", reflect.TypeOf((*MockAPI)(nil).GetDNSZones), ctx)
 }
 
+// GetEncryptionKey mocks base method
+func (m *MockAPI) GetEncryptionKey(ctx context.Context, keyCRN string) (*ibmcloud.EncryptionKeyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEncryptionKey", ctx, keyCRN)
+	ret0, _ := ret[0].(*ibmcloud.EncryptionKeyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEncryptionKey indicates an expected call of GetEncryptionKey
+func (mr *MockAPIMockRecorder) GetEncryptionKey(ctx, keyCRN interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEncryptionKey", reflect.TypeOf((*MockAPI)(nil).GetEncryptionKey), ctx, keyCRN)
+}
+
 // GetResourceGroups mocks base method
 func (m *MockAPI) GetResourceGroups(ctx context.Context) ([]models.ResourceGroupv2, error) {
 	m.ctrl.T.Helper()
@@ -139,6 +154,21 @@ func (m *MockAPI) GetSubnet(ctx context.Context, subnetID string) (*vpcv1.Subnet
 func (mr *MockAPIMockRecorder) GetSubnet(ctx, subnetID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubnet", reflect.TypeOf((*MockAPI)(nil).GetSubnet), ctx, subnetID)
+}
+
+// GetVSIProfiles mocks base method
+func (m *MockAPI) GetVSIProfiles(ctx context.Context) ([]vpcv1.InstanceProfile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVSIProfiles", ctx)
+	ret0, _ := ret[0].([]vpcv1.InstanceProfile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVSIProfiles indicates an expected call of GetVSIProfiles
+func (mr *MockAPIMockRecorder) GetVSIProfiles(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVSIProfiles", reflect.TypeOf((*MockAPI)(nil).GetVSIProfiles), ctx)
 }
 
 // GetVPC mocks base method

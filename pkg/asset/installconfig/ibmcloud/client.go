@@ -25,9 +25,11 @@ type API interface {
 	GetCustomImageByName(ctx context.Context, imageName string, region string) (*vpcv1.Image, error)
 	GetCustomImages(ctx context.Context, region string) ([]vpcv1.Image, error)
 	GetDNSZones(ctx context.Context) ([]ibmcloudtypes.DNSZoneResponse, error)
+	GetEncryptionKey(ctx context.Context, keyCRN string) (*ibmcloudtypes.EncryptionKeyResponse, error)
 	GetResourceGroups(ctx context.Context) ([]models.ResourceGroupv2, error)
 	GetResourceGroup(ctx context.Context, nameOrID string) (*models.ResourceGroupv2, error)
 	GetSubnet(ctx context.Context, subnetID string) (*vpcv1.Subnet, error)
+	GetVSIProfiles(ctx context.Context) ([]vpcv1.InstanceProfile, error)
 	GetVPC(ctx context.Context, vpcID string) (*vpcv1.VPC, error)
 	GetVPCZonesForRegion(ctx context.Context, region string) ([]string, error)
 	GetZoneIDByName(ctx context.Context, crn string, name string) (string, error)
@@ -139,6 +141,12 @@ func (c *Client) GetDNSZones(ctx context.Context) ([]ibmcloudtypes.DNSZoneRespon
 	}
 
 	return allZones, nil
+}
+
+// GetEncryptionKey gets data for an encryption key
+func (c *Client) GetEncryptionKey(ctx context.Context, keyCRN string) (*ibmcloudtypes.EncryptionKeyResponse, error) {
+	// TODO: IBM: Call KMS / Hyperprotect Crpyto APIs.
+	return &ibmcloudtypes.EncryptionKeyResponse{}, nil
 }
 
 // GetZoneIDByName gets the CIS zone ID from its domain name.
@@ -261,6 +269,13 @@ func (c *Client) GetCustomImageByName(ctx context.Context, imageName string, reg
 		return nil, fmt.Errorf("image not found: %s", imageName)
 	}
 	return image, nil
+}
+
+// GetVSIProfiles gets a list of all VSI profiles.
+func (c *Client) GetVSIProfiles(ctx context.Context) ([]vpcv1.InstanceProfile, error) {
+	listInstanceProfilesOptions := c.vpcAPI.NewListInstanceProfilesOptions()
+	profiles, _, err := c.vpcAPI.ListInstanceProfilesWithContext(ctx, listInstanceProfilesOptions)
+	return profiles.Profiles, err
 }
 
 // GetVPC gets a VPC by its ID.
