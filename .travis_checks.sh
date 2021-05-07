@@ -16,29 +16,24 @@
 
 set -ex
 
-# Worst case scenario, we attempt to compare again a common base branch
-COMMON_BASE_BRANCH=master
 MODIFIED_FILES=
+
 
 if [[ -z "${TRAVIS_COMMIT_RANGE}" ]]; then
     # New branch, skip running lint tests
     echo "New branch detected, skipping lint tests."
     exit 0
-elif [[ ${TRAVIS_PULL_REQUEST} != false ]]; then
-    # Pull Request build
-    MODIFIED_FILES="$(git diff --name-only --diff-filter=AM ${TRAVIS_BRANCH}..HEAD --)"
-elif [[ "$(git cat-file -t "$(awk -F. '{print $1}' <<< "${TRAVIS_COMMIT_RANGE}")" 2>/dev/null)" != commit && "$(git cat-file -t "$(awk -F. '{print $4}' <<< "${TRAVIS_COMMIT_RANGE}")" 2>/dev/null)" == commit ]]; then
-    # Rebase or force push
-    # Attempt to find a proper comparison against 'development' or 'master'
+else
     set +e
-    MODIFIED_FILES="$(git diff --name-only --diff-filter=AM ${COMMON_BASE_BRANCH}..HEAD)"
+    # Attempt normal build
+    MODIFIED_FILES="$(git diff --name-only --diff-filter=AM ${TRAVIS_COMMIT_RANGE} --)"
     if [[ $? -ne 0 ]]; then
-        MODIFIED_FILES="$(git diff --name-only --diff-filter=AM master..HEAD)"
+        # A rebase or force push has been performed, best we can do is
+        # check the most recent commit (as commit range now references a
+        # bad commit; otherwise, no files will be collected and we "skip"
+        MODIFIED_FILES="$(git diff --name-only --diff-filter=AM HEAD~1...HEAD --)"
     fi
     set -e
-else
-    # Normal build
-    MODIFIED_FILES="$(git diff --name-only --diff-filter=AM ${TRAVIS_COMMIT_RANGE/.../..} --)"
 fi
 
 function run_bashate {
