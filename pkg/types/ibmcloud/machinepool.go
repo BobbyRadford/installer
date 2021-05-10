@@ -1,11 +1,43 @@
 package ibmcloud
 
 // MachinePool stores the configuration for a machine pool installed on IBM Cloud.
-// TODO: IBM: populate this struct
 type MachinePool struct {
+	// Type is the VSI machine profile.
+	Type string `json:"type,omitempty"`
+
+	// Zones is the list of availability zones used for machines in the pool.
+	// +optional
+	Zones []string `json:"zones,omitempty"`
+
+	// BootVolume is the configuration for the machine's boot volume.
+	// +optional
+	BootVolume *BootVolume `json:"bootVolume,omitempty"`
+}
+
+// BootVolume stores the configuration for an individual machine's boot volume.
+type BootVolume struct {
+	// EncryptionKey is the CRN referencing a Key Protect or Hyper Protect
+	// Crypto Services key to use for volume encryption. If not specified, a
+	// provider managed encryption key will be used.
+	// +optional
+	EncryptionKey string `json:"encryptionKey"`
 }
 
 // Set sets the values from `required` to `a`.
 func (a *MachinePool) Set(required *MachinePool) {
-	// TODO: IBM: implement if needed
+	if required == nil || a == nil {
+		return
+	}
+
+	if required.Type != "" {
+		a.Type = required.Type
+	}
+
+	if len(required.Zones) > 0 {
+		a.Zones = required.Zones
+	}
+
+	if required.BootVolume != nil {
+		a.BootVolume = required.BootVolume
+	}
 }

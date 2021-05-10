@@ -16,8 +16,20 @@ func Validate(client API, ic *types.InstallConfig) error {
 	allErrs := field.ErrorList{}
 	childPath := field.NewPath("platorm").Child("ibmcloud")
 	allErrs = append(allErrs, validatePlatform(client, ic, childPath)...)
-	// TODO: IBM: If MachinePool customizations are present in the control or
-	// compute fields, run validateMachinePool() against them.
+
+	if ic.ControlPlane != nil && ic.ControlPlane.Platform.IBMCloud != nil {
+		machinePool := ic.ControlPlane.Platform.IBMCloud
+		fldPath := field.NewPath("controlPlane").Child("platform").Child("ibmcloud")
+		allErrs = append(allErrs, validateMachinePool(client, ic.IBMCloud, machinePool, fldPath)...)
+	}
+	for idx, compute := range ic.Compute {
+		machinePool := compute.Platform.IBMCloud
+		fldPath := field.NewPath("compute").Index(idx).Child("platform").Child("ibmcloud")
+		if machinePool != nil {
+			allErrs = append(allErrs, validateMachinePool(client, ic.IBMCloud, machinePool, fldPath)...)
+		}
+	}
+
 	return allErrs.ToAggregate()
 }
 
@@ -37,13 +49,71 @@ func validatePlatform(client API, ic *types.InstallConfig, path *field.Path) fie
 	}
 
 	if ic.Platform.IBMCloud.DefaultMachinePlatform != nil {
-		allErrs = append(allErrs, validateMachinePool(client, ic.Platform.IBMCloud.DefaultMachinePlatform, path)...)
+		allErrs = append(allErrs, validateMachinePool(client, ic.IBMCloud, ic.Platform.IBMCloud.DefaultMachinePlatform, path)...)
 	}
 	return allErrs
 }
 
-func validateMachinePool(client API, machinePool *ibmcloud.MachinePool, path *field.Path) field.ErrorList {
+func validateMachinePool(client API, platform *ibmcloud.Platform, machinePool *ibmcloud.MachinePool, path *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+
+	if machinePool.Type != "" {
+		allErrs = append(allErrs, validateMachinePoolType(client, machinePool.Type, path)...)
+	}
+
+	if len(machinePool.Zones) > 0 {
+		allErrs = append(allErrs, validateMachinePoolZones(client, platform.Region, machinePool.Zones, path)...)
+	}
+
+	if machinePool.BootVolume != nil {
+		allErrs = append(allErrs, validateMachinePoolBootVolume(client, *machinePool.BootVolume, path)...)
+	}
+
+	return allErrs
+}
+
+func validateMachinePoolType(client API, machineType string, path *field.Path) field.ErrorList {
+	vsiProfiles, err := client.GetVSIProfiles(context.TODO())
+	if err != nil {
+		return field.ErrorList{field.InternalError(path.Child("type"), err)}
+	}
+
+	for _, profile := range vsiProfiles {
+		if *profile.Name == machineType {
+			return field.ErrorList{}
+		}
+	}
+
+	return field.ErrorList{field.NotFound(path.Child("type"), machineType)}
+}
+
+func validateMachinePoolZones(client API, region string, zones []string, path *field.Path) field.ErrorList {
+	regionalZones, err := client.GetVPCZonesForRegion(context.TODO(), region)
+	if err != nil {
+		return field.ErrorList{field.InternalError(path.Child("zones"), err)}
+	}
+
+	for idx, zone := range zones {
+		if !contains(regionalZones, zone) {
+			return field.ErrorList{field.Invalid(path.Child("zones").Index(idx), zone, fmt.Sprintf("zone : %s not found in region : %s", zone, region))}
+		}
+	}
+	return field.ErrorList{}
+}
+
+func validateMachinePoolBootVolume(client API, bootVolume ibmcloud.BootVolume, path *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// Make sure the encryptionKey exists
+	key, err := client.GetEncryptionKey(context.TODO(), bootVolume.EncryptionKey)
+	if err != nil {
+		return field.ErrorList{field.InternalError(path.Child("bootVolume").Child("encryptionKey"), err)}
+	}
+
+	if key == nil {
+		return field.ErrorList{field.NotFound(path.Child("bootVolume").Child("encryptionKey"), bootVolume.EncryptionKey)}
+	}
+
 	return allErrs
 }
 
