@@ -20,7 +20,7 @@ func validateBootVolume(bv *ibmcloud.BootVolume, path *field.Path) field.ErrorLi
 	if bv.EncryptionKey != "" {
 		_, parseErr := crn.Parse(bv.EncryptionKey)
 		if parseErr != nil {
-			allErrs = append(allErrs, field.Invalid(path.Child("encryptionKey"), bv.EncryptionKey, "encrpytionKey is not a valid IBM CRN"))
+			allErrs = append(allErrs, field.Invalid(path.Child("encryptionKey"), bv.EncryptionKey, "encryptionKey is not a valid IBM CRN"))
 		}
 	}
 	return allErrs
