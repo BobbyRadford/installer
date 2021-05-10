@@ -16,7 +16,7 @@ type MachinePool struct {
 
 // BootVolume stores the configuration for an individual machine's boot volume.
 type BootVolume struct {
-	// EncryptionKey is the CRN referencing a a Key Protect or Hyper Protect
+	// EncryptionKey is the CRN referencing a Key Protect or Hyper Protect
 	// Crypto Services key to use for volume encryption. If not specified, a
 	// provider managed encryption key will be used.
 	// +optional
