@@ -13,7 +13,9 @@ require (
 	github.com/Azure/go-ntlmssp v0.0.0-20191115210519-2b2be6cc8ed4 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20190607011252-c5096ec8773d // indirect
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20210513052039-9ddb92888817
-	github.com/IBM/go-sdk-core/v5 v5.4.3
+	github.com/IBM-Cloud/terraform-provider-ibm v1.25.0
+	github.com/IBM/go-sdk-core/v4 v4.10.0 // indirect
+	github.com/IBM/go-sdk-core/v5 v5.4.2
 	github.com/IBM/networking-go-sdk v0.14.0
 	github.com/IBM/platform-services-go-sdk v0.18.13
 	github.com/IBM/vpc-go-sdk v1.0.1
@@ -30,7 +32,6 @@ require (
 	github.com/coreos/stream-metadata-go v0.0.0-20210225230131-70edb9eb47b3
 	github.com/dmacvicar/terraform-provider-libvirt v0.6.4-0.20201216193629-2b60d7626ff8
 	github.com/fatih/color v1.10.0 // indirect
-	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-playground/validator/v10 v10.2.0
 	github.com/golang/mock v1.4.4
@@ -82,7 +83,7 @@ require (
 	github.com/shurcooL/vfsgen v0.0.0-20181202132449-6a9ea43bcacd
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/terraform-provider-openstack/terraform-provider-openstack v1.37.0
 	github.com/terraform-providers/terraform-provider-aws v1.60.1-0.20200807230610-d5346d47e3af
 	github.com/terraform-providers/terraform-provider-azurerm v1.44.1-0.20200911233120-57b2bfc9d42c
@@ -93,7 +94,7 @@ require (
 	github.com/ulikunitz/xz v0.5.8
 	github.com/vincent-petithory/dataurl v0.0.0-20191104211930-d1553a71de50
 	github.com/vmware/govmomi v0.24.0
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/mod v0.4.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
@@ -120,6 +121,7 @@ require (
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.57.0
+	github.com/IBM-Cloud/terraform-provider-ibm => github.com/hasueki/terraform-provider-ibm v1.25.0-openshift
 	github.com/go-log/log => github.com/go-log/log v0.1.1-0.20181211034820-a514cf01a3eb // Pinned by MCO
 	github.com/hashicorp/terraform => github.com/openshift/terraform v0.12.20-openshift-4 // Pin to fork with deduplicated rpc types v0.12.20-openshift-4
 	github.com/hashicorp/terraform-plugin-sdk => github.com/openshift/hashicorp-terraform-plugin-sdk v1.14.0-openshift // Pin to fork with public rpc types
@@ -153,4 +155,15 @@ replace (
 	google.golang.org/api => google.golang.org/api v0.25.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
 	google.golang.org/grpc => google.golang.org/grpc v1.29.1
+)
+
+// Pin for IBM-Cloud/terraform-provider-ibm
+require github.ibm.com/ibmcloud/kubernetesservice-go-sdk v0.0.0-00010101000000-000000000000 // indirect
+
+replace (
+	github.com/IBM/vpc-go-sdk => github.com/IBM/vpc-go-sdk v0.6.0
+	github.com/go-openapi/errors => github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/validate => github.com/go-openapi/validate v0.19.8
+	github.com/softlayer/softlayer-go => github.com/hasueki/softlayer-go v1.0.3-terraform // Temporary workaround
+	github.ibm.com/ibmcloud/kubernetesservice-go-sdk => github.com/hasueki/kubernetesservice-go-sdk v0.0.1 // Temporary workaround
 )
