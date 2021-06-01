@@ -12,7 +12,6 @@ import (
 	osp "github.com/openshift/installer/pkg/destroy/openstack"
 	"github.com/openshift/installer/pkg/terraform"
 	"github.com/openshift/installer/pkg/types/gcp"
-	"github.com/openshift/installer/pkg/types/ibmcloud"
 	"github.com/openshift/installer/pkg/types/libvirt"
 	"github.com/openshift/installer/pkg/types/openstack"
 	"github.com/openshift/installer/pkg/types/ovirt"
@@ -69,9 +68,6 @@ func Destroy(dir string) (err error) {
 		if err != nil {
 			return errors.Wrap(err, "failed disabling bootstrap")
 		}
-	case ibmcloud.Name:
-		// TODO: IBM[#101]: Support bootstrap removal
-		return nil
 	case libvirt.Name:
 		// First remove the bootstrap node from DNS
 		_, err = terraform.Apply(tempDir, platform, append(extraArgs, "-var=bootstrap_dns=false")...)
