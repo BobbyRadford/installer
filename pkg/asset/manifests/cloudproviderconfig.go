@@ -1,6 +1,7 @@
 package manifests
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 
@@ -152,7 +153,11 @@ func (cpc *CloudProviderConfig) Generate(dependencies asset.Parents) error {
 		}
 		cm.Data[cloudProviderConfigDataKey] = gcpConfig
 	case ibmcloudtypes.Name:
-		ibmcloudConfig, err := ibmcloudmanifests.CloudProviderConfig(clusterID.InfraID, *installConfig.Config)
+		accountID, err := installConfig.IBMCloud.AccountID(context.TODO())
+		if err != nil {
+			return err
+		}
+		ibmcloudConfig, err := ibmcloudmanifests.CloudProviderConfig(clusterID.InfraID, accountID)
 		if err != nil {
 			return errors.Wrap(err, "could not create cloud provider config")
 		}
