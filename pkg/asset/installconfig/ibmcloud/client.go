@@ -264,6 +264,7 @@ func (c *Client) GetResourceGroups(ctx context.Context) ([]resourcemanagerv2.Res
 	defer cancel()
 
 	options := c.managementAPI.NewListResourceGroupsOptions()
+	options.SetAccountID(o.AccountID)
 	listResourceGroupsResponse, _, err := c.managementAPI.ListResourceGroups(options)
 	if err != nil {
 		return nil, err
